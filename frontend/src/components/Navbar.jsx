@@ -31,7 +31,7 @@ export default function Navbar() {
             </svg>
           </div>
           <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--text)', letterSpacing: '-0.01em' }}>
-            Resume<span style={{ color: 'var(--accent2)' }}>ATS</span>
+            CV<span style={{ color: 'var(--accent2)' }}>Fixer</span>
           </span>
         </Link>
 
