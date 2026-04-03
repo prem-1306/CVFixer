@@ -1,0 +1,16 @@
+{
+  "name": "CVFixer",
+  "short_name": "CVFixer",
+  "description": "Free ATS Resume Checker for Freshers in India",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08080e",
+  "theme_color": "#6c63ff",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
