@@ -2,6 +2,8 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAnalysis } from '../hooks/useAnalysis'
 import axios from 'axios'
+import { motion, AnimatePresence } from 'framer-motion'
+import StickmanStory from '../components/StickmanStory'
 
 const API = import.meta.env.VITE_API_URL || ''
 
@@ -20,7 +22,7 @@ const LOADING_STEPS = [
   { label: 'Finalizing your results', icon: '✅', duration: 500 },
 ]
 
-/* ─── Cinematic Loading Screen ─── */
+/* ─── Cinematic Loading Screen (ORIGINAL) ─── */
 function LoadingScreen({ currentStep }) {
   const [progress, setProgress] = useState(0)
   const [completedSteps, setCompletedSteps] = useState([])
@@ -50,7 +52,6 @@ function LoadingScreen({ currentStep }) {
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 24, background: 'var(--bg)', position: 'fixed', inset: 0, zIndex: 50
     }}>
-      {/* Background glow */}
       <div style={{
         position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)',
         width: 700, height: 700, borderRadius: '50%',
@@ -59,7 +60,6 @@ function LoadingScreen({ currentStep }) {
       }} />
 
       <div style={{ width: '100%', maxWidth: 520, position: 'relative' }}>
-
         {/* Top: Radar + Title */}
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           {/* Radar animation */}
@@ -93,7 +93,7 @@ function LoadingScreen({ currentStep }) {
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
             Deep AI Analysis Running
           </h2>
-          <p style={{ fontSize: 15, color: 'var(--accent2)', fontFamily: 'var(--font-mono)' }}>
+          <p style={{ fontSize: 16, color: 'var(--accent2)', fontFamily: 'var(--font-mono)' }}>
             {currentStep}{dots}
           </p>
         </div>
@@ -162,7 +162,7 @@ function LoadingScreen({ currentStep }) {
                 {/* Label */}
                 <div style={{ flex: 1 }}>
                   <span style={{
-                    fontSize: 14, fontWeight: isActive ? 600 : 400,
+                    fontSize: 15, fontWeight: isActive ? 600 : 400,
                     color: isDone ? 'var(--green)' : isActive ? 'var(--text)' : 'var(--text3)',
                     transition: 'color 0.3s'
                   }}>
@@ -181,7 +181,7 @@ function LoadingScreen({ currentStep }) {
           })}
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text3)', marginTop: 24 }}>
+        <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--text3)', marginTop: 24 }}>
           <span style={{color: 'var(--accent)', fontWeight: 600}}>Wait a minute!</span> This is a genuine AI extraction. It takes a few seconds to run properly. 🤖✨
         </p>
       </div>
@@ -200,6 +200,14 @@ export default function CheckerPage() {
   const [analyzing, setAnalyzing] = useState(false)
   const [analyzeStep, setAnalyzeStep] = useState('')
   const [error, setError]       = useState('')
+  const [introFinished, setIntroFinished] = useState(false)
+  const [extractProgress, setExtractProgress] = useState(0)
+
+  useEffect(() => {
+    if (!introFinished) {
+      setTimeout(() => setIntroFinished(true), 3000)
+    }
+  }, [introFinished])
 
   const handleFile = useCallback(async (file) => {
     if (!file) return
@@ -209,15 +217,42 @@ export default function CheckerPage() {
     if (file.size > 5 * 1024 * 1024) { setError('File too large. Max 5MB.'); return }
 
     setUploading(true)
+    setStep('extracting') // Trigger the animation step
+    setExtractProgress(0)
+
+    // Smooth progress from 0 to 99 over 10 seconds
+    let currentP = 0;
+    const interval = setInterval(() => {
+      currentP += Math.random() * 2 + 1; 
+      if (currentP > 99) currentP = 99;
+      setExtractProgress(Math.floor(currentP))
+    }, 200)
+
     const form = new FormData()
     form.append('file', file)
+    
     try {
-      const res = await axios.post(`${API}/api/upload-resume`, form)
+      // Force minimum 10 seconds delay so the animation plays fully
+      const minDelay = new Promise(r => setTimeout(r, 10000));
+      const uploadReq = axios.post(`${API}/api/upload-resume`, form);
+      
+      const [, res] = await Promise.all([minDelay, uploadReq])
+      
       setResumeText(res.data.text)
       setFileName(res.data.filename)
-      setStep('role')
+      
+      // Complete progress to 100
+      clearInterval(interval)
+      setExtractProgress(100)
+      
+      setTimeout(() => {
+        setStep('role')
+      }, 1000)
+
     } catch (e) {
+      clearInterval(interval)
       setError(e.response?.data?.detail || 'Upload failed. Try pasting your resume text below.')
+      setStep('upload')
     }
     setUploading(false)
   }, [setResumeText, setFileName])
@@ -228,7 +263,7 @@ export default function CheckerPage() {
     setError('')
     setAnalyzing(true)
 
-    // Cycle through steps with timing
+    // Cycle through steps with timing (original standard duration)
     let i = 0
     setAnalyzeStep(LOADING_STEPS[0].label)
     const cycleStep = () => {
@@ -258,17 +293,44 @@ export default function CheckerPage() {
     }
   }
 
+  // Pure original loading screen renders during analysis
   if (analyzing) return <LoadingScreen currentStep={analyzeStep} />
 
-  return (
-    <div style={{ maxWidth: 760, margin: '0 auto', padding: '48px 24px 80px' }}>
+  if (!introFinished) {
+    return (
+      <AnimatePresence>
+        <motion.div 
+          key="intro"
+          style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', zIndex: 100 }}
+          exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
+          transition={{ duration: 0.6, ease: "easeInOut" }}
+        >
+          <motion.h1 
+            initial={{ opacity: 0, scale: 0.8, y: 30, filter: 'blur(15px)' }}
+            animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 4vw, 56px)', fontWeight: 800, textAlign: 'center', color: 'var(--text)', padding: 24, lineHeight: 1.2 }}
+          >
+            Are you ready to level up<br/>
+            <span style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>your CV?</span>
+          </motion.h1>
+        </motion.div>
+      </AnimatePresence>
+    )
+  }
 
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+      style={{ maxWidth: step === 'extracting' ? 1400 : 840, margin: '0 auto', padding: '48px 24px 80px' }}
+      layout
+    >
       {/* Step indicator */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 48 }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 48, maxWidth: 840, margin: '0 auto 48px' }}>
         {['Upload Resume', 'Job Details', 'Get Results'].map((label, i) => {
           const done   = step === 'role' && i === 0
-          const active = (step === 'upload' && i === 0) || (step === 'role' && i === 1)
-          const future = (step === 'upload' && i > 0) || (step === 'role' && i > 1)
+          const active = ((step === 'upload' || step === 'extracting') && i === 0) || (step === 'role' && i === 1)
+          const future = ((step === 'upload' || step === 'extracting') && i > 0) || (step === 'role' && i > 1)
           return (
             <div key={label} style={{ display: 'flex', alignItems: 'center', flex: i < 2 ? 1 : 'none' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
@@ -288,77 +350,119 @@ export default function CheckerPage() {
         })}
       </div>
 
-      {/* ── UPLOAD STEP ── */}
-      {step === 'upload' && (
+      {/* ── UPLOAD OR EXTRACTING STEP ── */}
+      {(step === 'upload' || step === 'extracting') && (
         <div className="fade-up">
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 800, marginBottom: 8 }}>Upload your resume</h1>
-          <p style={{ fontSize: 15, color: 'var(--text2)', marginBottom: 36 }}>PDF, DOCX, or TXT • Max 5MB • We extract real text — no guessing</p>
-
-          {/* Drop zone */}
-          <div
-            onClick={() => fileRef.current.click()}
-            onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]) }}
-            onDragOver={e => { e.preventDefault(); setDragOver(true) }}
-            onDragLeave={() => setDragOver(false)}
-            style={{
-              border: `2px dashed ${dragOver ? 'var(--accent)' : 'var(--border2)'}`,
-              borderRadius: 20, padding: '56px 32px', textAlign: 'center', cursor: 'pointer',
-              background: dragOver ? 'rgba(108,99,255,0.05)' : 'var(--bg2)',
-              transition: 'all 0.2s ease', marginBottom: 28
-            }}
-          >
-            <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" style={{ display: 'none' }}
-              onChange={e => handleFile(e.target.files[0])} />
-
-            {uploading ? (
+          {step === 'upload' && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 36, maxWidth: 840, margin: '0 auto' }}>
               <div>
-                <div style={{ width: 52, height: 52, margin: '0 auto 20px', border: '3px solid var(--border2)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                <p style={{ fontSize: 16, color: 'var(--text2)' }}>Genuine AI is parsing your resume...</p>
+                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 800, marginBottom: 8 }}>Upload your resume</h1>
+                <p style={{ fontSize: 16, color: 'var(--text2)' }}>PDF, DOCX, or TXT • Max 5MB • Safe & secure</p>
               </div>
-            ) : (
-              <div>
-                <div style={{
-                  width: 72, height: 72, borderRadius: 18, margin: '0 auto 22px',
-                  background: 'var(--blue-bg)', border: '1px solid var(--blue-border)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32
-                }}>📄</div>
-                <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, marginBottom: 8, color: 'var(--text)' }}>
-                  {dragOver ? 'Drop it here!' : 'Drag & drop your resume'}
-                </p>
-                <p style={{ fontSize: 15, color: 'var(--text2)', marginBottom: 22 }}>or click to browse files</p>
-                <div style={{ display: 'inline-flex', gap: 8 }}>
-                  {['pdf','docx','txt'].map(t => (
-                    <span key={t} style={{ padding: '5px 14px', background: 'var(--bg3)', border: '1px solid var(--border2)', borderRadius: 7, fontSize: 13, color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>.{t}</span>
-                  ))}
+            </div>
+          )}
+
+          <div style={step === 'extracting' ? { display: 'grid', gridTemplateColumns: 'minmax(250px, 1fr) minmax(400px, 520px) minmax(250px, 1fr)', gap: '48px', alignItems: 'center' } : { maxWidth: 840, margin: '0 auto' }}>
+             
+             {/* Left Column (Only in extracting) */}
+             {step === 'extracting' && (
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <StickmanStory progress={extractProgress} />
                 </div>
+             )}
+
+             {/* Middle Column (Upload box) */}
+             <div style={{ width: '100%' }}>
+                <div
+                   onClick={() => !uploading && fileRef.current.click()}
+                   onDrop={e => { e.preventDefault(); setDragOver(false); if (!uploading) handleFile(e.dataTransfer.files[0]) }}
+                   onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+                   onDragLeave={() => setDragOver(false)}
+                   style={{
+                      border: `2px dashed ${dragOver ? 'var(--accent)' : 'var(--border2)'}`,
+                      borderRadius: 20, padding: '56px 32px', textAlign: 'center', cursor: uploading ? 'default' : 'pointer',
+                      background: dragOver ? 'rgba(108,99,255,0.05)' : 'var(--bg2)',
+                      transition: 'all 0.2s ease', 
+                      marginBottom: step === 'extracting' ? 0 : 28
+                   }}
+                >
+                   <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" style={{ display: 'none' }}
+                     onChange={e => handleFile(e.target.files[0])} />
+
+                   {uploading ? (
+                     <div>
+                       <div style={{ width: 52, height: 52, margin: '0 auto 20px', border: '3px solid var(--border2)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                       <p style={{ fontSize: 16, color: 'var(--text2)' }}>Genuine AI is parsing your resume...</p>
+                     </div>
+                   ) : (
+                     <div>
+                        <div style={{
+                          width: 72, height: 72, borderRadius: 18, margin: '0 auto 22px',
+                          background: 'var(--blue-bg)', border: '1px solid var(--blue-border)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32
+                        }}>📄</div>
+                        <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, marginBottom: 8, color: 'var(--text)' }}>
+                          {dragOver ? 'Drop it here!' : 'Drag & drop your resume'}
+                        </p>
+                        <p style={{ fontSize: 16, color: 'var(--text2)', marginBottom: 22 }}>or click to browse files</p>
+                        <div style={{ display: 'inline-flex', gap: 8 }}>
+                          {['pdf','docx','txt'].map(t => (
+                            <span key={t} style={{ padding: '6px 16px', background: 'var(--bg3)', border: '1px solid var(--border2)', borderRadius: 7, fontSize: 14, color: 'var(--text3)', fontFamily: 'var(--font-mono)' }}>.{t}</span>
+                          ))}
+                        </div>
+                     </div>
+                   )}
+                </div>
+             </div>
+
+             {/* Right Column (Only in extracting) */}
+             {step === 'extracting' && (
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px', height: '300px' }}>
+                    <div style={{ fontSize: '14px', color: 'var(--accent2)', fontWeight: 600, letterSpacing: '1px', marginBottom: '16px', fontFamily: 'var(--font-mono)', textAlign: 'center' }}>
+                      EXTRACTION PROGRESS
+                    </div>
+                    
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '80px', fontWeight: 900, color: extractProgress >= 95 ? 'var(--green)' : 'var(--text)', lineHeight: 1, display: 'flex', alignItems: 'flex-start' }}>
+                      {Math.min(extractProgress, 100)}<span style={{ fontSize: '32px', marginTop: '12px' }}>%</span>
+                    </div>
+
+                    <p style={{ fontSize: '14px', color: 'var(--text3)', textAlign: 'center', marginTop: '24px' }}>
+                      {extractProgress < 100 ? "Validating keywords..." : "Ready to proceed!"}
+                    </p>
+                  </div>
+                </div>
+             )}
+          </div>
+
+          {step === 'upload' && (
+            <div style={{ maxWidth: 840, margin: '0 auto' }}>
+              {/* Divider */}
+              <div style={{ position: 'relative', textAlign: 'center', marginBottom: 28 }}>
+                <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 1, background: 'var(--border)' }} />
+                <span style={{ position: 'relative', background: 'var(--bg)', padding: '0 18px', fontSize: 14, color: 'var(--text3)' }}>or paste resume text directly</span>
               </div>
-            )}
-          </div>
 
-          {/* Divider */}
-          <div style={{ position: 'relative', textAlign: 'center', marginBottom: 28 }}>
-            <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 1, background: 'var(--border)' }} />
-            <span style={{ position: 'relative', background: 'var(--bg)', padding: '0 18px', fontSize: 14, color: 'var(--text3)' }}>or paste resume text directly</span>
-          </div>
+              <textarea rows={9} value={resumeText} onChange={e => setResumeText(e.target.value)}
+                placeholder={`Paste your full resume text here...\n\nName, contact info, skills, education, projects, experience — everything.`}
+                style={{ fontFamily: 'var(--font-mono)', fontSize: 13, lineHeight: 1.75, resize: 'vertical', marginBottom: 16 }}
+              />
 
-          <textarea rows={9} value={resumeText} onChange={e => setResumeText(e.target.value)}
-            placeholder={`Paste your full resume text here...\n\nName, contact info, skills, education, projects, experience — everything.`}
-            style={{ fontFamily: 'var(--font-mono)', fontSize: 13, lineHeight: 1.75, resize: 'vertical', marginBottom: 16 }}
-          />
+              {error && <div style={{ padding: '14px 18px', background: 'var(--red-bg)', border: '1px solid var(--red-border)', borderRadius: 10, fontSize: 14, color: 'var(--red)', marginBottom: 16 }}>⚠️ {error}</div>}
 
-          {error && <div style={{ padding: '14px 18px', background: 'var(--red-bg)', border: '1px solid var(--red-border)', borderRadius: 10, fontSize: 14, color: 'var(--red)', marginBottom: 16 }}>⚠️ {error}</div>}
-
-          {resumeText.trim().length > 100 && (
-            <button className="btn-primary" onClick={() => { setFileName('Pasted text'); setStep('role') }} style={{ width: '100%' }}>
-              Continue with this text →
-            </button>
+              {resumeText.trim().length > 100 && (
+                <button className="btn-primary" onClick={() => { setFileName('Pasted text'); setStep('role') }} style={{ width: '100%' }}>
+                  Continue with this text →
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}
 
       {/* ── ROLE STEP ── */}
       {step === 'role' && (
-        <div className="fade-up">
+        <div className="fade-up" style={{ maxWidth: 840, margin: '0 auto' }}>
           {/* File indicator */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'var(--green-bg)', border: '1px solid var(--green-border)', borderRadius: 12, marginBottom: 36 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -372,7 +476,7 @@ export default function CheckerPage() {
           </div>
 
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 800, marginBottom: 8 }}>What role are you targeting?</h1>
-          <p style={{ fontSize: 15, color: 'var(--text2)', marginBottom: 32 }}>We use real keyword databases per role. Add a JD for laser-accurate matching.</p>
+          <p style={{ fontSize: 16, color: 'var(--text2)', marginBottom: 32 }}>We use real keyword databases per role. Add a JD for laser-accurate matching.</p>
 
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontSize: 14, color: 'var(--text2)', display: 'block', marginBottom: 8, fontWeight: 500 }}>Target Job Role *</label>
@@ -383,7 +487,7 @@ export default function CheckerPage() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
             {QUICK_ROLES.map(r => (
               <button key={r} onClick={() => setJobRole(r)} style={{
-                padding: '7px 16px', borderRadius: 100, fontSize: 14,
+                padding: '8px 18px', borderRadius: 100, fontSize: 15,
                 background: jobRole === r ? 'var(--accent)' : 'var(--bg3)',
                 color: jobRole === r ? '#fff' : 'var(--text2)',
                 border: `1px solid ${jobRole === r ? 'var(--accent)' : 'var(--border2)'}`,
@@ -394,13 +498,13 @@ export default function CheckerPage() {
           </div>
 
           <div style={{ marginBottom: 32 }}>
-            <label style={{ fontSize: 14, display: 'block', marginBottom: 4, fontWeight: 500 }}>
+            <label style={{ fontSize: 15, display: 'block', marginBottom: 4, fontWeight: 500 }}>
               Job Description <span style={{ color: 'var(--accent2)', fontWeight: 400 }}>(recommended — boosts accuracy)</span>
             </label>
-            <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 10 }}>Paste the actual JD → we extract exact keywords → much higher accuracy</p>
+            <p style={{ fontSize: 14, color: 'var(--text3)', marginBottom: 10 }}>Paste the actual JD → we extract exact keywords → much higher accuracy</p>
             <textarea rows={7} value={jobDesc} onChange={e => setJobDesc(e.target.value)}
               placeholder={`Paste the job description here...\n\ne.g. "We are looking for a Data Analyst with 0–2 years experience.\nMust have SQL, Python, Power BI skills, strong analytical thinking..."`}
-              style={{ fontSize: 14, lineHeight: 1.75, resize: 'vertical' }}
+              style={{ fontSize: 15, lineHeight: 1.75, resize: 'vertical' }}
             />
           </div>
 
@@ -414,6 +518,6 @@ export default function CheckerPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

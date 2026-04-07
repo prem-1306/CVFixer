@@ -32,7 +32,20 @@ export default function Navbar() {
           </div>
           <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--text)', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', gap: 8 }}>
             <span>CV<span style={{ color: 'var(--accent2)' }}>Fixer</span></span>
-            <span style={{ padding: '3px 8px', background: 'linear-gradient(45deg, rgba(108,99,255,0.1), rgba(139,92,246,0.1))', color: 'var(--accent2)', fontSize: 10, fontWeight: 700, borderRadius: 100, border: '1px solid rgba(139,92,246,0.2)' }}>✨ AI Powered</span>
+            <span style={{ 
+              padding: '4px 10px', 
+              background: 'linear-gradient(90deg, rgba(108,99,255,0.15) 0%, rgba(139,92,246,0.15) 100%)', 
+              color: 'var(--accent2)', 
+              fontSize: 11, 
+              fontWeight: 700, 
+              borderRadius: 100, 
+              border: '1px solid rgba(139,92,246,0.3)',
+              boxShadow: '0 0 10px rgba(108,99,255,0.2), inset 0 0 5px rgba(139,92,246,0.2)',
+              animation: 'glowPulse 3s ease-in-out infinite'
+            }}>
+              <span style={{ display: 'inline-block', animation: 'pulse 1.5s infinite', marginRight: 4 }}>✨</span>
+              Genuine AI Powered
+            </span>
           </span>
         </Link>
 

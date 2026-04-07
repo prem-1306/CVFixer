@@ -6,10 +6,10 @@ export default function Footer() {
       <div style={{ maxWidth: 1120, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 40, marginBottom: 40 }}>
           <div style={{ maxWidth: 280 }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 20, marginBottom: 10 }}>
-              Resume<span style={{ color: 'var(--accent2)' }}>ATS</span>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 24, marginBottom: 12 }}>
+              CV<span style={{ color: 'var(--accent2)' }}>Fixer</span>
             </div>
-            <p style={{ fontSize: 14, lineHeight: 1.7 }}>
+            <p style={{ fontSize: 15, lineHeight: 1.7 }}>
               Real ATS checker for Indian freshers. No fake scores, no paywall, no BS.
             </p>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
@@ -34,19 +34,20 @@ export default function Footer() {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 14, fontFamily: 'var(--font-display)' }}>Roles</div>
+              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 14, fontFamily: 'var(--font-display)' }}>Roles</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {['Data Analyst', 'Business Analyst', 'MIS Executive', 'Software Engineer'].map(r => (
-                  <span key={r} style={{ fontSize: 14, color: 'var(--text2)' }}>{r}</span>
+                  <span key={r} style={{ fontSize: 15, color: 'var(--text2)' }}>{r}</span>
                 ))}
               </div>
             </div>
           </div>
         </div>
 
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-          <span style={{ fontSize: 13, color: 'var(--text3)' }}>© 2025 ResumeATS — Made for Indian freshers 🇮🇳</span>
-          <span style={{ fontSize: 13, color: 'var(--text3)' }}>Free ATS Checker • Real scoring • No fake results</span>
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <span style={{ fontSize: 14, color: 'var(--text3)' }}>© 2026 CVFixer — Made for Indian freshers 🇮🇳</span>
+          <span style={{ fontSize: 14, color: 'var(--text3)' }}>Contact: <a href="mailto:beginnerstudent218@gmail.com" style={{ color: 'var(--accent2)', textDecoration: 'none' }}>beginnerstudent218@gmail.com</a></span>
+          <span style={{ fontSize: 14, color: 'var(--text3)' }}>Free ATS Checker • Real scoring • No fake results</span>
         </div>
       </div>
     </footer>
