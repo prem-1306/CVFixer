@@ -9,6 +9,13 @@ from typing import Optional
 from scoring import compute_ats_score, extract_resume_sections
 from keywords import get_role_keywords, extract_jd_keywords
 
+try:
+    from ai_service import analyze_resume_genuine, improve_resume_ai
+    ai_available = True
+except ImportError:
+    ai_available = False
+    print("Warning: ai_service not found. Falling back to rule-based engine.")
+
 app = FastAPI(title="ATS Resume Checker API", version="1.0.0")
 
 app.add_middleware(
@@ -88,6 +95,14 @@ async def analyze_resume(
     if not job_role.strip():
         raise HTTPException(status_code=400, detail="Job role is required.")
 
+    # Try AI Analysis First
+    if ai_available:
+        try:
+            return analyze_resume_genuine(resume_text, job_role, job_description)
+        except Exception as e:
+            print(f"AI Analysis Failed: {e}. Falling back to rule-based engine.")
+
+    # Fallback to Rule-based Engine
     if job_description and len(job_description.strip()) > 30:
         jd_keywords = extract_jd_keywords(job_description)
         role_keywords = get_role_keywords(job_role)
@@ -117,6 +132,14 @@ async def improve_resume(
     We ONLY add confirmed_skills to the resume — no fake skills.
     """
     confirmed = json.loads(confirmed_skills) if confirmed_skills else []
+    
+    if ai_available:
+        try:
+            improved = improve_resume_ai(resume_text, job_role, confirmed)
+            return {"success": True, "improved_text": improved}
+        except Exception as e:
+            print(f"AI Improve Failed: {e}. Falling back to standard rewriter.")
+
     # Only use confirmed skills — never auto-inject missing keywords
     improved = rewrite_resume(resume_text, job_role, confirmed)
     return {"success": True, "improved_text": improved}
