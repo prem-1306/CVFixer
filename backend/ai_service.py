@@ -1,34 +1,16 @@
 import os
 import json
-import google.generativeai as genai
+import requests
 from typing import Dict, List
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure Gemini
 api_key = os.getenv("GEMINI_API_KEY")
-if api_key:
-    genai.configure(api_key=api_key)
-
-# We use gemini-1.5-flash as it is fast, free, and excellent at NLP tasks
-generation_config = {
-  "temperature": 0.2, # Low temperature for more deterministic, factual output
-  "top_p": 0.95,
-  "top_k": 40,
-  "max_output_tokens": 8192,
-  "response_mime_type": "application/json",
-}
-
-model = genai.GenerativeModel(
-  model_name="gemini-1.5-flash",
-  generation_config=generation_config,
-)
 
 def analyze_resume_genuine(resume_text: str, job_role: str, job_description: str = None) -> Dict:
     """
     Perform a highly genuine, ruthless analysis of the resume against the role/description.
-    Expects a strict JSON output.
     """
     if not api_key:
         raise ValueError("GEMINI_API_KEY is missing")
@@ -78,9 +60,21 @@ Your response must be ONLY valid JSON matching this schema exactly:
   "strengths": list of strings
 }}
 """
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.2,
+            "responseMimeType": "application/json"
+        }
+    }
+    
     try:
-        response = model.generate_content(prompt)
-        result = json.loads(response.text)
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        data = response.json()
+        raw_text = data['candidates'][0]['content']['parts'][0]['text']
+        result = json.loads(raw_text)
         
         result["keyword_source"] = "AI_Analysis"
         result["analyzed_keywords"] = result["keywords"]["matched"] + result["keywords"]["missing"]
@@ -88,7 +82,6 @@ Your response must be ONLY valid JSON matching this schema exactly:
         result["project_ideas"] = [
             {"title": "Role-focused Portfolio", "tech": "Relevant Stack", "desc": "Build a hands-on project demonstrating missing skills."}
         ]
-        
         return result
     except Exception as e:
         print(f"AI Analysis Error: {e}")
@@ -101,19 +94,6 @@ def improve_resume_ai(resume_text: str, job_role: str, confirmed_skills: List[st
     """
     if not api_key:
         raise ValueError("GEMINI_API_KEY is missing")
-
-    text_generation_config = {
-      "temperature": 0.4,
-      "top_p": 0.95,
-      "top_k": 40,
-      "max_output_tokens": 8192,
-      "response_mime_type": "text/plain",
-    }
-    
-    text_model = genai.GenerativeModel(
-      model_name="gemini-1.5-flash",
-      generation_config=text_generation_config,
-    )
 
     skills_str = ", ".join(confirmed_skills) if confirmed_skills else "None provided"
 
@@ -138,9 +118,19 @@ Original Resume Text:
 
 Return ONLY the rewritten resume text. Do not include introductory conversational text.
 """
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.4
+        }
+    }
+
     try:
-        response = text_model.generate_content(prompt)
-        return response.text.strip()
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        data = response.json()
+        return data['candidates'][0]['content']['parts'][0]['text'].strip()
     except Exception as e:
         print(f"AI Improvement Error: {e}")
         raise e
