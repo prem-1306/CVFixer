@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom'
 const ROLES = ['Data Analyst','Business Analyst','MIS Executive','Operations Analyst','Software Engineer','Web Developer','Marketing Analyst','Product Manager']
 
 const FEATURES = [
-  { icon: '🎯', title: 'Real Keyword Matching', desc: 'Word-by-word regex matching. If a keyword is in your resume — it shows matched. If not — it shows missing. Zero false positives.' },
-  { icon: '📊', title: 'Genuine ATS Score', desc: 'Scored across 5 real dimensions: Keywords 40%, Skills 25%, Structure 15%, Sections 10%, Readability 10%.' },
-  { icon: '⚡', title: 'AI Suggestions', desc: 'Specific, actionable improvements for your exact resume. Not generic advice — exact fixes with expected score impact.' },
-  { icon: '🔍', title: 'Skill Gap Analysis', desc: 'See exactly which skills you\'re missing vs what the role demands. Prioritized by importance.' },
-  { icon: '💡', title: 'Project Ideas', desc: 'Tailored project suggestions for Data Analyst, BA, MIS, and more. Build a portfolio that actually gets noticed.' },
-  { icon: '✨', title: 'Resume Improver', desc: 'We rewrite your resume with missing keywords and stronger bullet points. Honest — no fake experience added.' },
+  { icon: '🧠', title: 'AI Keyword Extraction', desc: 'Deep-learning semantic extraction. If a keyword is related to your resume — it shows matched. Zero false positives.' },
+  { icon: '📊', title: 'Genuine AI ATS Score', desc: 'Scored across 5 real dimensions by Google Gemini: Keywords 40%, Skills 25%, Structure 15%, Sections 10%, Readability 10%.' },
+  { icon: '⚡', title: 'Generative AI Suggestions', desc: 'Specific, actionable improvements for your exact resume. Not generic advice — exact fixes with expected score impact.' },
+  { icon: '🔍', title: 'Intelligent Skill Gap Analysis', desc: 'See exactly which skills you\'re missing vs what the role demands. AI prioritizes by importance.' },
+  { icon: '💡', title: 'AI Project Ideas', desc: 'Tailored project suggestions for Data Analyst, BA, MIS, and more. Build a portfolio that actually gets noticed.' },
+  { icon: '✨', title: 'AI Resume Writer', desc: 'We genuinely rewrite your resume with missing keywords and stronger bullet points using the STAR method. No fake experience added.' },
 ]
 
 const STEPS = [
@@ -34,7 +34,7 @@ export default function HomePage() {
           {/* Pill badge */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--bg3)', border: '1px solid var(--border2)', borderRadius: 100, padding: '7px 18px', marginBottom: 36, fontSize: 13, color: 'var(--text2)' }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--green)', display: 'inline-block', animation: 'pulse 2s infinite' }} />
-            100% Free &nbsp;•&nbsp; No login &nbsp;•&nbsp; Real scoring — not fake numbers
+            ✨ AI Powered &nbsp;•&nbsp; 100% Free &nbsp;•&nbsp; Genuine extraction
           </div>
 
           {/* Headline */}
@@ -46,8 +46,8 @@ export default function HomePage() {
           </h1>
 
           <p style={{ fontSize: 18, color: 'var(--text2)', maxWidth: 540, margin: '0 auto 44px', lineHeight: 1.75 }}>
-            Real keyword analysis. Genuine scoring. AI-powered fixes.<br />
-            Built for Indian freshers who want to get shortlisted — not rejected.
+            Enterprise-grade AI keyword analysis. Genuine scoring. Generative AI fixes.<br />
+            Built for those who want to get shortlisted — not rejected.
           </p>
 
           {/* CTA buttons */}

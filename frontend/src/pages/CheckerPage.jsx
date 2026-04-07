@@ -91,7 +91,7 @@ function LoadingScreen({ currentStep }) {
           </div>
 
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
-            Analyzing Resume
+            Deep AI Analysis Running
           </h2>
           <p style={{ fontSize: 15, color: 'var(--accent2)', fontFamily: 'var(--font-mono)' }}>
             {currentStep}{dots}
@@ -182,7 +182,7 @@ function LoadingScreen({ currentStep }) {
         </div>
 
         <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text3)', marginTop: 24 }}>
-          Genuine keyword matching — no fake scores ever.
+          <span style={{color: 'var(--accent)', fontWeight: 600}}>Wait a minute!</span> This is a genuine AI extraction. It takes a few seconds to run properly. 🤖✨
         </p>
       </div>
     </div>
@@ -313,7 +313,7 @@ export default function CheckerPage() {
             {uploading ? (
               <div>
                 <div style={{ width: 52, height: 52, margin: '0 auto 20px', border: '3px solid var(--border2)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                <p style={{ fontSize: 16, color: 'var(--text2)' }}>Extracting text from your resume...</p>
+                <p style={{ fontSize: 16, color: 'var(--text2)' }}>Genuine AI is parsing your resume...</p>
               </div>
             ) : (
               <div>

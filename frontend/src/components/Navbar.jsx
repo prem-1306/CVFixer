@@ -30,8 +30,9 @@ export default function Navbar() {
               <path d="M12.3 13.5l1.1 1.1 2.1-2.2" stroke="#6c63ff" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--text)', letterSpacing: '-0.01em' }}>
-            CV<span style={{ color: 'var(--accent2)' }}>Fixer</span>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--text)', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>CV<span style={{ color: 'var(--accent2)' }}>Fixer</span></span>
+            <span style={{ padding: '3px 8px', background: 'linear-gradient(45deg, rgba(108,99,255,0.1), rgba(139,92,246,0.1))', color: 'var(--accent2)', fontSize: 10, fontWeight: 700, borderRadius: 100, border: '1px solid rgba(139,92,246,0.2)' }}>✨ AI Powered</span>
           </span>
         </Link>
 
