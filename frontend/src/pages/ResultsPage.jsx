@@ -514,7 +514,9 @@ export default function ResultsPage() {
               <ScoreRing score={total_score} />
               <div style={{ marginTop: 24 }}>
                 <p style={{ fontSize: 13, color: 'var(--text3)', textAlign: 'center' }}>
-                  {results.keyword_source === 'job_description' ? 'Scored against your JD' : `Scored against ${jobRole} keyword database`}
+                  {results.keyword_source === 'job_description' ? 'Scored against your JD' : 
+                   results.keyword_source === 'AI_Analysis' ? '✨ Analyzed by Deep AI Engine' :
+                   `Scored against ${jobRole} keyword database`}
                 </p>
               </div>
             </div>
