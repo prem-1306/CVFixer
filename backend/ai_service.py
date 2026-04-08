@@ -60,7 +60,7 @@ Your response must be ONLY valid JSON matching this schema exactly:
   "strengths": list of strings
 }}
 """
-    MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
+    MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"]
     
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -144,7 +144,7 @@ Original Resume Text:
 
 Return ONLY the rewritten resume text. Do not include introductory conversational text.
 """
-    MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
+    MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"]
     
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
