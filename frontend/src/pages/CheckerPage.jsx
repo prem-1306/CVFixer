@@ -245,6 +245,9 @@ export default function CheckerPage() {
       setResumeText(res.data.text)
       setFileName(res.data.filename)
       
+      const info = res.data.ai_info || {}
+      if (info.suggested_role) setJobRole(info.suggested_role)
+      
       // Complete progress to 100
       clearInterval(interval)
       setExtractProgress(100)
@@ -472,8 +475,12 @@ export default function CheckerPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontSize: 20 }}>✅</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--green)' }}>{fileName || 'Resume text ready'}</div>
-                <div style={{ fontSize: 13, color: 'var(--text2)' }}>{resumeText.split(/\s+/).filter(Boolean).length} words extracted successfully</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--green)' }}>
+                   {fileName || 'Resume text ready'} (AI Parsed)
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text2)' }}>
+                  Detected Role: <span style={{ color: 'var(--accent2)', fontWeight: 600 }}>{jobRole || 'Scanning...'}</span>
+                </div>
               </div>
             </div>
             <button className="btn-ghost" style={{ fontSize: 13, padding: '7px 16px' }} onClick={() => setStep('upload')}>Change</button>

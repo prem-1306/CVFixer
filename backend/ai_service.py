@@ -7,6 +7,72 @@ from dotenv import load_dotenv
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
+MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite"]
+
+def _gemini_post(prompt: str, temperature: float = 0.2, response_mime: str = "text/plain") -> str:
+    """Helper for Gemini API calls with retries and 429 backoff."""
+    import time
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": temperature,
+            "responseMimeType": response_mime
+        }
+    }
+    
+    last_error = None
+    for model in MODELS:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        for attempt in range(3):
+            try:
+                print(f"Gemini: Trying {model} (attempt {attempt+1})...")
+                response = requests.post(url, json=payload, timeout=60)
+                
+                if response.status_code == 429:
+                    print(f"{model} quota/rate limit reached. Waiting 10s...")
+                    time.sleep(10)
+                    continue
+                
+                if response.status_code == 503:
+                    break
+
+                if response.status_code in (400, 401, 403, 404):
+                    body = response.text[:500]
+                    last_error = Exception(f"Gemini API Error {response.status_code}: {body}")
+                    break
+                    
+                response.raise_for_status()
+                data = response.json()
+                return data['candidates'][0]['content']['parts'][0]['text'].strip()
+            except Exception as e:
+                last_error = e
+                if attempt < 2: time.sleep(2)
+                continue
+    raise last_error or Exception("All AI models failed")
+
+def parse_resume_ai(resume_text: str) -> Dict:
+    """Extract name, contact, sections and suggest a role from resume text."""
+    prompt = f"""
+    Analyze this resume text and extract key details into JSON format.
+    Return ONLY valid JSON.
+    
+    Resume Text:
+    {resume_text[:4000]}
+    
+    Schema:
+    {{
+      "name": "Full Name",
+      "contact": {{ "email": "email", "phone": "phone" }},
+      "suggested_role": "Most relevant job role (e.g. Data Analyst, Web Developer)",
+      "summary": "1-sentence professional summary",
+      "sections_found": ["List", "of", "sections"]
+    }}
+    """
+    try:
+        raw = _gemini_post(prompt, temperature=0.1, response_mime="application/json")
+        return json.loads(raw)
+    except:
+        return { "name": "User", "suggested_role": "", "summary": "", "sections_found": [] }
 
 def analyze_resume_genuine(resume_text: str, job_role: str, job_description: str = None) -> Dict:
     """
@@ -60,63 +126,16 @@ Your response must be ONLY valid JSON matching this schema exactly:
   "strengths": list of strings
 }}
 """
-    MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-pro"]
+    raw_text = _gemini_post(prompt, temperature=0.2, response_mime="application/json")
+    result = json.loads(raw_text)
     
-    payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {
-            "temperature": 0.2,
-            "responseMimeType": "application/json"
-        }
-    }
-    
-    import time
-    last_error = None
-    
-    for model in MODELS:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-        
-        for attempt in range(3):
-            try:
-                print(f"Trying {model} (attempt {attempt+1})...")
-                response = requests.post(url, json=payload, timeout=60)
-                
-                if response.status_code == 429:
-                    print(f"{model} quota/rate limit reached (429). Waiting 10s...")
-                    time.sleep(10)
-                    continue
-                
-                if response.status_code == 503:
-                    print(f"{model} service unavailable (503). Trying next model...")
-                    break
-
-                if response.status_code in (400, 401, 403):
-                    body = response.text[:500]
-                    print(f"{model} error {response.status_code}: {body}")
-                    last_error = Exception(f"Gemini API Error {response.status_code}: {body}")
-                    break
-                    
-                response.raise_for_status()
-                data = response.json()
-                raw_text = data['candidates'][0]['content']['parts'][0]['text']
-                result = json.loads(raw_text)
-                
-                result["keyword_source"] = "AI_Analysis"
-                result["analyzed_keywords"] = result["keywords"]["matched"] + result["keywords"]["missing"]
-                result["skills_to_learn"] = result["keywords"]["missing"][:5]
-                result["project_ideas"] = [
-                    {"title": "Role-focused Portfolio", "tech": "Relevant Stack", "desc": "Build a hands-on project demonstrating missing skills."}
-                ]
-                print(f"AI Analysis succeeded with {model}")
-                return result
-            except Exception as e:
-                last_error = e
-                print(f"AI Analysis Error with {model}: {e}")
-                if attempt < 2:
-                    time.sleep(2)
-                continue
-        
-    raise last_error or Exception("All AI models failed")
+    result["keyword_source"] = "AI_Analysis"
+    result["analyzed_keywords"] = result["keywords"]["matched"] + result["keywords"]["missing"]
+    result["skills_to_learn"] = result["keywords"]["missing"][:5]
+    result["project_ideas"] = [
+        {"title": "Role-focused Portfolio", "tech": "Relevant Stack", "desc": "Build a hands-on project demonstrating missing skills."}
+    ]
+    return result
 
 
 def improve_resume_ai(resume_text: str, job_role: str, confirmed_skills: List[str]) -> str:
@@ -149,45 +168,4 @@ Original Resume Text:
 
 Return ONLY the rewritten resume text. Do not include introductory conversational text.
 """
-    MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-pro"]
-    
-    payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {
-            "temperature": 0.4
-        }
-    }
-
-    import time
-    last_error = None
-    
-    for model in MODELS:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-        
-        for attempt in range(3):
-            try:
-                print(f"Improve: Trying {model} (attempt {attempt+1})...")
-                response = requests.post(url, json=payload, timeout=60)
-                
-                if response.status_code == 429:
-                    wait = min(2 ** attempt * 5, 30)
-                    print(f"{model} rate limited (429). Waiting {wait}s...")
-                    time.sleep(wait)
-                    continue
-                
-                if response.status_code == 503:
-                    print(f"{model} unavailable (503). Trying next model...")
-                    break
-                    
-                response.raise_for_status()
-                data = response.json()
-                print(f"AI Improve succeeded with {model}")
-                return data['candidates'][0]['content']['parts'][0]['text'].strip()
-            except Exception as e:
-                last_error = e
-                print(f"AI Improvement Error with {model}: {e}")
-                if attempt < 2:
-                    time.sleep(2)
-                continue
-    
-    raise last_error or Exception("All AI models failed for improvement")
+    return _gemini_post(prompt, temperature=0.4)

@@ -10,7 +10,7 @@ from scoring import compute_ats_score, extract_resume_sections
 from keywords import get_role_keywords, extract_jd_keywords
 
 try:
-    from ai_service import analyze_resume_genuine, improve_resume_ai
+    from ai_service import analyze_resume_genuine, improve_resume_ai, parse_resume_ai
     ai_available = True
 except ImportError:
     ai_available = False
@@ -73,6 +73,14 @@ async def upload_resume(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Unsupported file type. Use PDF, DOCX, or TXT.")
     if len(text.strip()) < 50:
         raise HTTPException(status_code=400, detail="Could not extract text. Try pasting text manually.")
+    # AI Parsing Step (Genuine AI from start to end)
+    ai_info = { "name": "User", "suggested_role": "", "summary": "" }
+    if ai_available:
+        try:
+            ai_info = parse_resume_ai(text)
+        except Exception as e:
+            print(f"AI Parsing Failed: {e}")
+
     sections = extract_resume_sections(text)
     return {
         "success": True,
@@ -80,7 +88,8 @@ async def upload_resume(file: UploadFile = File(...)):
         "text": text,
         "word_count": len(text.split()),
         "char_count": len(text),
-        "sections_detected": sections
+        "sections_detected": sections,
+        "ai_info": ai_info
     }
 
 
