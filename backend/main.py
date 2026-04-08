@@ -95,27 +95,20 @@ async def analyze_resume(
     if not job_role.strip():
         raise HTTPException(status_code=400, detail="Job role is required.")
 
-    # Try AI Analysis First
-    if ai_available:
-        try:
-            return analyze_resume_genuine(resume_text, job_role, job_description)
-        except Exception as e:
-            print(f"AI Analysis Failed: {e}. Falling back to rule-based engine.")
+    if not ai_available:
+        raise HTTPException(
+            status_code=503,
+            detail="AI service unavailable. Please check that GEMINI_API_KEY is set on the server."
+        )
 
-    # Fallback to Rule-based Engine
-    if job_description and len(job_description.strip()) > 30:
-        jd_keywords = extract_jd_keywords(job_description)
-        role_keywords = get_role_keywords(job_role)
-        all_keywords = list(dict.fromkeys(jd_keywords + role_keywords))[:40]
-        keyword_source = "job_description"
-    else:
-        all_keywords = get_role_keywords(job_role)
-        keyword_source = "role_database"
-
-    result = compute_ats_score(resume_text, job_role, all_keywords)
-    result["keyword_source"] = keyword_source
-    result["analyzed_keywords"] = all_keywords
-    return result
+    try:
+        return analyze_resume_genuine(resume_text, job_role, job_description)
+    except Exception as e:
+        print(f"AI Analysis Failed: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"AI analysis failed: {str(e)}. Please try again in a moment."
+        )
 
 
 @app.post("/api/improve")
@@ -132,17 +125,22 @@ async def improve_resume(
     We ONLY add confirmed_skills to the resume — no fake skills.
     """
     confirmed = json.loads(confirmed_skills) if confirmed_skills else []
-    
-    if ai_available:
-        try:
-            improved = improve_resume_ai(resume_text, job_role, confirmed)
-            return {"success": True, "improved_text": improved}
-        except Exception as e:
-            print(f"AI Improve Failed: {e}. Falling back to standard rewriter.")
 
-    # Only use confirmed skills — never auto-inject missing keywords
-    improved = rewrite_resume(resume_text, job_role, confirmed)
-    return {"success": True, "improved_text": improved}
+    if not ai_available:
+        raise HTTPException(
+            status_code=503,
+            detail="AI service unavailable. Please check that GEMINI_API_KEY is set on the server."
+        )
+
+    try:
+        improved = improve_resume_ai(resume_text, job_role, confirmed)
+        return {"success": True, "improved_text": improved}
+    except Exception as e:
+        print(f"AI Improve Failed: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"AI resume improvement failed: {str(e)}. Please try again."
+        )
 
 
 def extract_section(text: str, patterns: list) -> str:
