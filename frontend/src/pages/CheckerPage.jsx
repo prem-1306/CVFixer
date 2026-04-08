@@ -216,6 +216,10 @@ export default function CheckerPage() {
     if (!['pdf','docx','txt'].includes(ext)) { setError('Only PDF, DOCX, or TXT files allowed.'); return }
     if (file.size > 5 * 1024 * 1024) { setError('File too large. Max 5MB.'); return }
 
+    // Reset role & desc so user picks fresh for new file
+    setJobRole('')
+    setJobDesc('')
+
     setUploading(true)
     setStep('extracting') // Trigger the animation step
     setExtractProgress(0)
@@ -255,7 +259,7 @@ export default function CheckerPage() {
       setStep('upload')
     }
     setUploading(false)
-  }, [setResumeText, setFileName])
+  }, [setResumeText, setFileName, setJobRole, setJobDesc])
 
   const handleAnalyze = async () => {
     if (!jobRole.trim()) { setError('Please select or type a job role.'); return }
@@ -451,7 +455,7 @@ export default function CheckerPage() {
               {error && <div style={{ padding: '14px 18px', background: 'var(--red-bg)', border: '1px solid var(--red-border)', borderRadius: 10, fontSize: 14, color: 'var(--red)', marginBottom: 16 }}>⚠️ {error}</div>}
 
               {resumeText.trim().length > 100 && (
-                <button className="btn-primary" onClick={() => { setFileName('Pasted text'); setStep('role') }} style={{ width: '100%' }}>
+                <button className="btn-primary" onClick={() => { setFileName('Pasted text'); setJobRole(''); setJobDesc(''); setStep('role') }} style={{ width: '100%' }}>
                   Continue with this text →
                 </button>
               )}

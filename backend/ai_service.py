@@ -60,7 +60,8 @@ Your response must be ONLY valid JSON matching this schema exactly:
   "strengths": list of strings
 }}
 """
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
+    
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
@@ -69,23 +70,48 @@ Your response must be ONLY valid JSON matching this schema exactly:
         }
     }
     
-    try:
-        response = requests.post(url, json=payload)
-        response.raise_for_status()
-        data = response.json()
-        raw_text = data['candidates'][0]['content']['parts'][0]['text']
-        result = json.loads(raw_text)
+    import time
+    last_error = None
+    
+    for model in MODELS:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
         
-        result["keyword_source"] = "AI_Analysis"
-        result["analyzed_keywords"] = result["keywords"]["matched"] + result["keywords"]["missing"]
-        result["skills_to_learn"] = result["keywords"]["missing"][:5]
-        result["project_ideas"] = [
-            {"title": "Role-focused Portfolio", "tech": "Relevant Stack", "desc": "Build a hands-on project demonstrating missing skills."}
-        ]
-        return result
-    except Exception as e:
-        print(f"AI Analysis Error: {e}")
-        raise e
+        for attempt in range(3):
+            try:
+                print(f"Trying {model} (attempt {attempt+1})...")
+                response = requests.post(url, json=payload, timeout=60)
+                
+                if response.status_code == 429:
+                    wait = min(2 ** attempt * 5, 30)
+                    print(f"{model} rate limited (429). Waiting {wait}s...")
+                    time.sleep(wait)
+                    continue
+                
+                if response.status_code == 503:
+                    print(f"{model} unavailable (503). Trying next model...")
+                    break
+                    
+                response.raise_for_status()
+                data = response.json()
+                raw_text = data['candidates'][0]['content']['parts'][0]['text']
+                result = json.loads(raw_text)
+                
+                result["keyword_source"] = "AI_Analysis"
+                result["analyzed_keywords"] = result["keywords"]["matched"] + result["keywords"]["missing"]
+                result["skills_to_learn"] = result["keywords"]["missing"][:5]
+                result["project_ideas"] = [
+                    {"title": "Role-focused Portfolio", "tech": "Relevant Stack", "desc": "Build a hands-on project demonstrating missing skills."}
+                ]
+                print(f"AI Analysis succeeded with {model}")
+                return result
+            except Exception as e:
+                last_error = e
+                print(f"AI Analysis Error with {model}: {e}")
+                if attempt < 2:
+                    time.sleep(2)
+                continue
+        
+    raise last_error or Exception("All AI models failed")
 
 
 def improve_resume_ai(resume_text: str, job_role: str, confirmed_skills: List[str]) -> str:
@@ -118,7 +144,8 @@ Original Resume Text:
 
 Return ONLY the rewritten resume text. Do not include introductory conversational text.
 """
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
+    
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
@@ -126,11 +153,36 @@ Return ONLY the rewritten resume text. Do not include introductory conversationa
         }
     }
 
-    try:
-        response = requests.post(url, json=payload)
-        response.raise_for_status()
-        data = response.json()
-        return data['candidates'][0]['content']['parts'][0]['text'].strip()
-    except Exception as e:
-        print(f"AI Improvement Error: {e}")
-        raise e
+    import time
+    last_error = None
+    
+    for model in MODELS:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        
+        for attempt in range(3):
+            try:
+                print(f"Improve: Trying {model} (attempt {attempt+1})...")
+                response = requests.post(url, json=payload, timeout=60)
+                
+                if response.status_code == 429:
+                    wait = min(2 ** attempt * 5, 30)
+                    print(f"{model} rate limited (429). Waiting {wait}s...")
+                    time.sleep(wait)
+                    continue
+                
+                if response.status_code == 503:
+                    print(f"{model} unavailable (503). Trying next model...")
+                    break
+                    
+                response.raise_for_status()
+                data = response.json()
+                print(f"AI Improve succeeded with {model}")
+                return data['candidates'][0]['content']['parts'][0]['text'].strip()
+            except Exception as e:
+                last_error = e
+                print(f"AI Improvement Error with {model}: {e}")
+                if attempt < 2:
+                    time.sleep(2)
+                continue
+    
+    raise last_error or Exception("All AI models failed for improvement")
