@@ -486,7 +486,9 @@ export default function ResultsPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span className="badge b-accent">🎯 {jobRole}</span>
             <span className="badge" style={{ background: 'var(--bg3)', border: '1px solid var(--border2)', color: 'var(--text2)' }}>
-              {results.keyword_source === 'job_description' ? '✅ From your JD' : '📚 Role keyword database'}
+              {results.keyword_source === 'job_description' ? '✅ From your JD' : 
+               results.keyword_source === 'AI_Analysis' ? '✨ Genuine AI Analysis' : 
+               '📚 Role keyword database'}
             </span>
           </div>
         </div>

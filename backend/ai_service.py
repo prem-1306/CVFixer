@@ -60,7 +60,7 @@ Your response must be ONLY valid JSON matching this schema exactly:
   "strengths": list of strings
 }}
 """
-    MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"]
+    MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-pro"]
     
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -82,13 +82,18 @@ Your response must be ONLY valid JSON matching this schema exactly:
                 response = requests.post(url, json=payload, timeout=60)
                 
                 if response.status_code == 429:
-                    wait = min(2 ** attempt * 5, 30)
-                    print(f"{model} rate limited (429). Waiting {wait}s...")
-                    time.sleep(wait)
+                    print(f"{model} quota/rate limit reached (429). Waiting 10s...")
+                    time.sleep(10)
                     continue
                 
                 if response.status_code == 503:
-                    print(f"{model} unavailable (503). Trying next model...")
+                    print(f"{model} service unavailable (503). Trying next model...")
+                    break
+
+                if response.status_code in (400, 401, 403):
+                    body = response.text[:500]
+                    print(f"{model} error {response.status_code}: {body}")
+                    last_error = Exception(f"Gemini API Error {response.status_code}: {body}")
                     break
                     
                 response.raise_for_status()
@@ -144,7 +149,7 @@ Original Resume Text:
 
 Return ONLY the rewritten resume text. Do not include introductory conversational text.
 """
-    MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"]
+    MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-pro"]
     
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
