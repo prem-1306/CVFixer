@@ -181,8 +181,12 @@ function LoadingScreen({ currentStep }) {
           })}
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--text3)', marginTop: 24 }}>
-          <span style={{color: 'var(--accent)', fontWeight: 600}}>Wait a minute!</span> This is a genuine AI extraction. It takes a few seconds to run properly. 🤖✨
+        <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text3)', marginTop: 24, padding: '0 20px', lineHeight: 1.5 }}>
+          <span style={{color: 'var(--accent)', fontWeight: 600}}>Stay with us!</span> {
+            progress < 40 ? "Genuine AI is extracting every detail..." :
+            progress < 80 ? "Matched against 1000+ industry criteria..." :
+            "Google AI is currently busy. We're retrying to get your results... 🤖"
+          }
         </p>
       </div>
     </div>
@@ -236,11 +240,8 @@ export default function CheckerPage() {
     form.append('file', file)
     
     try {
-      // Force minimum 10 seconds delay so the animation plays fully
-      const minDelay = new Promise(r => setTimeout(r, 10000));
-      const uploadReq = axios.post(`${API}/api/upload-resume`, form);
-      
-      const [, res] = await Promise.all([minDelay, uploadReq])
+      const uploadReq = await axios.post(`${API}/api/upload-resume`, form);
+      const res = uploadReq;
       
       setResumeText(res.data.text)
       setFileName(res.data.filename)
@@ -248,13 +249,11 @@ export default function CheckerPage() {
       const info = res.data.ai_info || {}
       if (info.suggested_role) setJobRole(info.suggested_role)
       
-      // Complete progress to 100
+      // Complete progress immediately
       clearInterval(interval)
       setExtractProgress(100)
       
-      setTimeout(() => {
-        setStep('role')
-      }, 1000)
+      setStep('role')
 
     } catch (e) {
       clearInterval(interval)
@@ -270,17 +269,8 @@ export default function CheckerPage() {
     setError('')
     setAnalyzing(true)
 
-    // Cycle through steps with timing (original standard duration)
-    let i = 0
+    // Set initial loading step
     setAnalyzeStep(LOADING_STEPS[0].label)
-    const cycleStep = () => {
-      i++
-      if (i < LOADING_STEPS.length) {
-        setAnalyzeStep(LOADING_STEPS[i].label)
-        setTimeout(cycleStep, LOADING_STEPS[i].duration)
-      }
-    }
-    setTimeout(cycleStep, LOADING_STEPS[0].duration)
 
     const form = new FormData()
     form.append('resume_text', resumeText)
@@ -289,12 +279,10 @@ export default function CheckerPage() {
 
     try {
       const res = await axios.post(`${API}/api/analyze`, form)
-      // Small delay so last step shows
-      await new Promise(r => setTimeout(r, 600))
       setResults(res.data)
       nav('/results')
     } catch (e) {
-      setError(e.response?.data?.detail || 'Analysis failed. Make sure backend is running on port 8000.')
+      setError(e.response?.data?.detail || 'Analysis failed. Make sure backend is running.')
       setAnalyzing(false)
       setAnalyzeStep('')
     }

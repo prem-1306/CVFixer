@@ -163,7 +163,14 @@ function ImproveLoader({ currentStep, progress }) {
           })}
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text3)', marginTop: 20, fontFamily: 'var(--font-mono)' }}>
+        <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text3)', marginTop: 20, padding: '0 20px', lineHeight: 1.5 }}>
+          <span style={{color: 'var(--accent)', fontWeight: 600}}>Stay with us!</span> {
+            progress < 40 ? "AI is rewriting every section for impact..." :
+            progress < 80 ? "Polishing your bullet points using the STAR method..." :
+            "Google AI is currently busy. We're retrying to finish your resume... 🤖"
+          }
+        </p>
+        <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text3)', marginTop: 8, opacity: 0.7, fontFamily: 'var(--font-mono)' }}>
           No fake skills added — only your confirmed skills go in.
         </p>
       </div>
@@ -410,20 +417,9 @@ export default function ResultsPage() {
     setImproveErr('')
     setImproveProgress(0)
 
-    // ── Animate steps over ~10.5 seconds total ──
-    let stepIdx = 0
+    // Set single initial step
     setImproveStep(IMPROVE_STEPS[0].label)
-
-    const advanceStep = () => {
-      stepIdx++
-      if (stepIdx < IMPROVE_STEPS.length) {
-        setImproveStep(IMPROVE_STEPS[stepIdx].label)
-        const prog = Math.round(((stepIdx + 1) / IMPROVE_STEPS.length) * 90)
-        setImproveProgress(prog)
-        timerRef.current = setTimeout(advanceStep, IMPROVE_STEPS[stepIdx].ms)
-      }
-    }
-    timerRef.current = setTimeout(advanceStep, IMPROVE_STEPS[0].ms)
+    setImproveProgress(15)
 
     // ── API call ──
     const form = new FormData()
@@ -435,18 +431,13 @@ export default function ResultsPage() {
     form.append('suggestions', JSON.stringify(suggestions))
 
     try {
-      // Ensure at least 10 seconds total
-      const [res] = await Promise.all([
-        axios.post(`${API}/api/improve`, form),
-        new Promise(r => setTimeout(r, 10500))  // minimum 10.5s wait
-      ])
-      clearTimeout(timerRef.current)
+      const res = await axios.post(`${API}/api/improve`, form)
+      
       setImproveProgress(100)
       setImproveStep('Done!')
-      await new Promise(r => setTimeout(r, 600))
+      await new Promise(r => setTimeout(r, 400))
       setImproved(res.data.improved_text)
     } catch (e) {
-      clearTimeout(timerRef.current)
       setImproveErr(e.response?.data?.detail || 'Improvement failed. Check backend is running.')
     }
     setImproving(false)
