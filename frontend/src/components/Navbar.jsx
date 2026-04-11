@@ -13,40 +13,43 @@ export default function Navbar() {
     }}>
       <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
 
-        {/* Logo */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {/* Logo Section */}
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
           <div style={{
-            width: 34, height: 34, borderRadius: 9,
-            background: 'linear-gradient(135deg, var(--accent), #8b5cf6)',
+            width: 38, height: 38, borderRadius: 10,
+            background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 16px rgba(108,99,255,0.4)',
+            boxShadow: '0 4px 20px rgba(108,99,255,0.3)',
             flexShrink: 0,
+            border: '1px solid rgba(255,255,255,0.1)'
           }}>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect x="3" y="3" width="6" height="1.8" rx="0.9" fill="white"/>
-              <rect x="3" y="6.6" width="12" height="1.6" rx="0.8" fill="white" opacity="0.75"/>
-              <rect x="3" y="10" width="9" height="1.6" rx="0.8" fill="white" opacity="0.5"/>
-              <circle cx="13.5" cy="13.5" r="3" fill="white" opacity="0.9"/>
-              <path d="M12.3 13.5l1.1 1.1 2.1-2.2" stroke="#6c63ff" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <rect x="3" y="4" width="7" height="2" rx="1" fill="white"/>
+              <rect x="3" y="8" width="14" height="1.8" rx="0.9" fill="white" opacity="0.8"/>
+              <rect x="3" y="12" width="10" height="1.8" rx="0.9" fill="white" opacity="0.6"/>
+              <circle cx="15" cy="15" r="3.5" fill="white" opacity="0.95"/>
+              <path d="M13.5 15l1.2 1.2 2.3-2.3" stroke="var(--accent)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--text)', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span>CV<span style={{ color: 'var(--accent2)' }}>Fixer</span></span>
-            <span style={{ 
-              padding: '4px 10px', 
-              background: 'linear-gradient(90deg, rgba(108,99,255,0.15) 0%, rgba(139,92,246,0.15) 100%)', 
-              color: 'var(--accent2)', 
-              fontSize: 11, 
-              fontWeight: 700, 
-              borderRadius: 100, 
-              border: '1px solid rgba(139,92,246,0.3)',
-              boxShadow: '0 0 10px rgba(108,99,255,0.2), inset 0 0 5px rgba(139,92,246,0.2)',
-              animation: 'glowPulse 3s ease-in-out infinite'
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div style={{ 
+              fontFamily: 'var(--font-display)', 
+              fontWeight: 800, 
+              fontSize: 22, 
+              color: 'var(--text)', 
+              letterSpacing: '-0.02em', 
+              lineHeight: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
             }}>
-              <span style={{ display: 'inline-block', animation: 'pulse 1.5s infinite', marginRight: 4 }}>✨</span>
-              Genuine AI Powered
+              <span>CV<span style={{ color: 'var(--accent2)' }}>Fixer</span></span>
+            </div>
+            <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 500, letterSpacing: '0.01em', marginTop: 2 }}>
+              <span style={{ color: 'var(--green)', marginRight: 4 }}>•</span>
+              Real ATS Scoring. No Fake Results.
             </span>
-          </span>
+          </div>
         </Link>
 
         {/* Nav right */}

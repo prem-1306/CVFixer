@@ -10,7 +10,7 @@ export default function Footer() {
               CV<span style={{ color: 'var(--accent2)' }}>Fixer</span>
             </div>
             <p style={{ fontSize: 15, lineHeight: 1.7 }}>
-              Real ATS checker for Indian freshers. No fake scores, no paywall, no BS.
+              AI-powered ATS Resume Checker for all job roles. Built for freshers and professionals.
             </p>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <span className="badge b-green">100% Free</span>
@@ -20,24 +20,27 @@ export default function Footer() {
 
           <div style={{ display: 'flex', gap: 64, flexWrap: 'wrap' }}>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 14, fontFamily: 'var(--font-display)' }}>Tool</div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 14, fontFamily: 'var(--font-display)' }}>Resources</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <Link to="/check" style={{ fontSize: 14, color: 'var(--text2)', transition: 'color 0.15s' }}
-                  onMouseEnter={e => e.target.style.color = 'var(--text)'}
-                  onMouseLeave={e => e.target.style.color = 'var(--text2)'}>ATS Checker</Link>
-                <Link to="/check" style={{ fontSize: 14, color: 'var(--text2)', transition: 'color 0.15s' }}
-                  onMouseEnter={e => e.target.style.color = 'var(--text)'}
-                  onMouseLeave={e => e.target.style.color = 'var(--text2)'}>Keyword Analyzer</Link>
-                <Link to="/check" style={{ fontSize: 14, color: 'var(--text2)', transition: 'color 0.15s' }}
-                  onMouseEnter={e => e.target.style.color = 'var(--text)'}
-                  onMouseLeave={e => e.target.style.color = 'var(--text2)'}>Resume Improver</Link>
+                <Link to="/check" style={{ fontSize: 14, color: 'var(--text2)', transition: 'color 0.15s' }}>ATS Resume Checker</Link>
+                <Link to="/check" style={{ fontSize: 14, color: 'var(--text2)', transition: 'color 0.15s' }}>AI Resume Score</Link>
+                <Link to="/check" style={{ fontSize: 14, color: 'var(--text2)', transition: 'color 0.15s' }}>Keyword Analyzer</Link>
+                <Link to="/check" style={{ fontSize: 14, color: 'var(--text2)', transition: 'color 0.15s' }}>Resume Rewriter</Link>
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 14, fontFamily: 'var(--font-display)' }}>Roles</div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 14, fontFamily: 'var(--font-display)' }}>Blog</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <Link to="/blog/ats-resume-tips" style={{ fontSize: 14, color: 'var(--text2)' }}>ATS Resume Tips</Link>
+                <Link to="/blog/resume-keywords" style={{ fontSize: 14, color: 'var(--text2)' }}>Modern Resume Keywords</Link>
+                <Link to="/blog/fresher-resume-guide" style={{ fontSize: 14, color: 'var(--text2)' }}>Fresher Resume Guide</Link>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 14, fontFamily: 'var(--font-display)' }}>Roles Supported</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {['Data Analyst', 'Business Analyst', 'MIS Executive', 'Software Engineer'].map(r => (
-                  <span key={r} style={{ fontSize: 15, color: 'var(--text2)' }}>{r}</span>
+                  <span key={r} style={{ fontSize: 14, color: 'var(--text3)' }}>{r} Job Ready</span>
                 ))}
               </div>
             </div>
